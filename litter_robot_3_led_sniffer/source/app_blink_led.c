@@ -43,7 +43,6 @@
 /****************************************************************************/
 #include "jendefs.h"
 #include "dbg.h"
-//REMOVE #include "App_OccupancySensor.h"
 #include "app_blink_led.h"
 
 #include "LED.h"

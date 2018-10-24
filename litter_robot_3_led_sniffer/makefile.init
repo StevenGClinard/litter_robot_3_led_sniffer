@@ -1,0 +1,8 @@
+BUILD_DATE = $$(date +'%Y%m%d')
+BUILD_NUMBER = $$(git rev-list HEAD | wc -l)
+
+../build_number.defs: ../../.git/refs/heads/master
+	@echo writing build_number.defs
+	echo "#define BUILD_DATE \"$(BUILD_DATE)\" \n#define BUILD_NUMBER \"$(BUILD_NUMBER)\"\n" > ../build_number.defs
+	
+C_SRCS += ../build_number.defs

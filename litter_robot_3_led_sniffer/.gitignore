@@ -1,3 +1,8 @@
+*.save
 *.orig
 *.o
 /Debug/
+/.settings/
+.cproject
+*.jlink
+build_number.defs

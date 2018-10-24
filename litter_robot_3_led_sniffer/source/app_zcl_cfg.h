@@ -33,8 +33,6 @@
 * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
      
-
-
 #ifndef _APP_ZCL_CFG_H
 #define _APP_ZCL_CFG_H
 
@@ -192,3 +190,4 @@
 /****************************************************************************/
 
 #endif
+

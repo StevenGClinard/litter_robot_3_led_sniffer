@@ -33,11 +33,11 @@
 * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef APP_ZLO_SENSOR_NODE_H_
-#define APP_ZLO_SENSOR_NODE_H_
+#ifndef APP_ZHA_SENSOR_NODE_H_
+#define APP_ZHA_SENSOR_NODE_H_
      
 /*!
-\file       app_zlo_sensor_node.c
+\file       app_zha_sensor_node.c
 \brief      ZLO Demo : Stack <-> Light Sensor Control App Interaction(Interface)
 */     
 

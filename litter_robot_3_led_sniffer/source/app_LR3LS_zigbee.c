@@ -31,23 +31,224 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /*!=================================================================================================
-\file       app_litter_robot_3_led_sniffer.c
-\brief      Declarations specific to LR3LS device functions
+\file       app_LR3LS_zigbee.c
+\brief      ZigBee functionality of LR3LS
 ==================================================================================================*/
 
-#include "app_litter_robot_3_led_sniffer.h"
+/****************************************************************************/
+/***        Include files                                                 ***/
+/****************************************************************************/
 
-tsCLD_MultistateInputBasic sLR3LSState;
+#include "app_LR3LS_zigbee.h"
+#include "app_common.h"
 
-void vHandleDeviceStateChange(teLitterRobot3StateEnum state);
+// Board includes
+#include "app_blink_led.h"
+#include "LED.h"
+#include "dbg.h"
+#include "app_nwk_event_handler.h"
 
-void vHandleNewJoinEvent(void);
+// ZigBee includes
+#include "base_device.h"
+#include "FunctionLib.h"
+#include "Basic.h"
+#include "white_goods.h"
+#include "ApplianceEventsAndAlerts.h"
+#include "bdb_api.h"
 
-void vAPP_ZCL_DeviceSpecific_Init(void);
-teZCL_Status eApp_ZLO_RegisterEndpoint(tfpZCL_ZCLCallBackFunction fptr);
-void vAPP_ZCL_DeviceSpecific_UpdateIdentify(void);
-void vAPP_ZCL_DeviceSpecific_SetIdentifyTime(uint16 u16Time);
-void vAPP_ZCL_DeviceSpecific_IdentifyOff(void);
+#include "build_number.defs"
 
-void vAppHandleStartup(void);
-void vAppHandleRunning(ZPS_tsAfEvent* psStackEvent);
+/****************************************************************************/
+/***        Macro Definitions                                             ***/
+/****************************************************************************/
+#ifdef DEBUG_LR3LS_EVENTS
+    #define TRACE_LR3LS_EVENTS   TRUE
+#else
+    #define TRACE_LR3LS_EVENTS  FALSE
+#endif
+
+#define ALERT_CATEGORY_BIT	8
+#define ALERT_PRESENCE_BIT	12
+typedef enum {
+	E_ALERT_CATEGORY_RESERVED_BIT = 0,
+	E_ALERT_CATEGORY_WARNING_BIT = 1,
+	E_ALERT_CATEGORY_DANGER_BIT = 2,
+	E_ALERT_CATEGORY_FAILURE_BIT = 3
+} eAlertCategory;
+
+/****************************************************************************/
+/***        Local Variables                                               ***/
+/****************************************************************************/
+
+PRIVATE tsHA_WhiteGoodsDevice			sDevice;
+PRIVATE const zuint24					u8AlarmDefaults[E_LR3LS_ALARM_COUNT] =
+{
+		1 << E_ALERT_CATEGORY_DANGER_BIT,	// E_LR3LS_ALARM_FULL
+		1 << E_ALERT_CATEGORY_FAILURE_BIT,	// E_LR3LS_ALARM_STUCK,
+		1 << E_ALERT_CATEGORY_DANGER_BIT,	// E_LR3LS_ALARM_OFF,
+		1 << E_ALERT_CATEGORY_FAILURE_BIT,	// E_LR3LS_ALARM_TIMEOUT,
+};
+
+PRIVATE tsCLD_AEAA_GetAlertsResponseORAlertsNotificationPayload sAlarmPayload;
+
+inline static void vSetAlarmOn(teLR3LSAlarmEnum eAlarm) { sAlarmPayload.au24AlertStructure[eAlarm] &= ~(1 << ALERT_PRESENCE_BIT); }
+inline static void vSetAlarmOff(teLR3LSAlarmEnum eAlarm) { sAlarmPayload.au24AlertStructure[eAlarm] |= (1 << ALERT_PRESENCE_BIT); }
+
+static uint8 u8SequenceNumber;
+
+/****************************************************************************/
+/***        Exported Functions                                            ***/
+/****************************************************************************/
+
+void vApp_LR3LS_Z_HandleStartup(void)
+{
+    DBG_vPrintf(TRACE_LR3LS_EVENTS, "\nAPP State Event: StartUp");
+    BDB_eNsStartNwkSteering();
+    sDeviceDesc.eNodeState = E_JOINING_NETWORK;
+}
+
+void vApp_LR3LS_Z_HandleRunning(ZPS_tsAfEvent* psStackEvent)
+{
+    DBG_vPrintf(TRACE_LR3LS_EVENTS, "\nAPP State Event: Running: Event %d", psStackEvent->eType);
+
+    switch(psStackEvent->eType)
+    {
+
+    case ZPS_EVENT_NWK_JOINED_AS_ENDDEVICE:
+        vHandleNetworkJoinEndDevice();
+        #ifdef APP_NTAG_ICODE
+        {
+            /* Not a rejoin ? */
+            if (FALSE == psStackEvent->uEvent.sNwkJoinedEvent.bRejoin)
+            {
+                /* Write network data to tag */
+                APP_vNtagStart(OCCUPANCYSENSOR_SENSOR_ENDPOINT);
+            }
+        }
+        #endif
+        break;
+
+    case ZPS_EVENT_NWK_LEAVE_INDICATION:
+        vHandleNetworkLeave(psStackEvent);
+        break;
+
+    case ZPS_EVENT_NWK_POLL_CONFIRM:
+        vHandlePollResponse(psStackEvent);
+        break;
+
+    case ZPS_EVENT_NWK_LEAVE_CONFIRM:
+        vHandleNetworkLeaveConfirm(psStackEvent);
+        break;
+
+    default:
+        break;
+
+    }
+}
+
+void vAPP_LR3LS_Z_HandleNewJoinEvent(void)
+{
+    DBG_vPrintf(TRACE_LR3LS_EVENTS,"\nAPP Device Event: New join");
+}
+
+void vAPP_LR3LS_Z_ClearMemory(void)
+{
+	DBG_vPrintf(TRACE_LR3LS_EVENTS,"\nAPP Device Event: Clear memory");
+
+	/* resetting the sensor structure back to zero*/
+	FLib_MemSet(&sDevice, 0, sizeof(sDevice));
+}
+
+void vAPP_LR3LS_Z_DeviceSpecific_Init(void)
+{
+	DBG_vPrintf(TRACE_LR3LS_EVENTS,"\nAPP Device Event: Init");
+
+    /* Initialise the strings in Basic */
+    FLib_MemCpy(sDevice.sBasicServerCluster.au8ManufacturerName, ZCL_MANUFACTURER_NAME, CLD_BAS_MANUF_NAME_SIZE);
+    FLib_MemCpy(sDevice.sBasicServerCluster.au8ModelIdentifier, ZCL_MODEL_NAME, CLD_BAS_MODEL_ID_SIZE);
+    FLib_MemCpy(sDevice.sBasicServerCluster.au8DateCode, BUILD_DATE, CLD_BAS_DATE_SIZE);
+    FLib_MemCpy(sDevice.sBasicServerCluster.au8SWBuildID, BUILD_NUMBER, CLD_BAS_SW_BUILD_SIZE);
+
+    FLib_MemSet(&sAlarmPayload, 0, sizeof(sAlarmPayload));
+    FLib_MemCpy(sAlarmPayload.au24AlertStructure, (void*)u8AlarmDefaults, sizeof(u8AlarmDefaults));
+    sAlarmPayload.u8AlertsCount = E_LR3LS_ALARM_COUNT;
+}
+
+teZCL_Status eApp_LR3LS_Z_RegisterEndpoint(tfpZCL_ZCLCallBackFunction fptr)
+{
+	DBG_vPrintf(TRACE_LR3LS_EVENTS,"\nAPP Device Event: Register Endpoint");
+
+	return eHA_RegisterWhiteGoodsEndPoint(E_LR3LS_APPLIANCE_ENDPOINT, fptr, &sDevice);
+}
+
+void vAPP_ZCL_DeviceSpecific_UpdateIdentify(void)
+{
+    APP_vSetLED(LED2, sDevice.sIdentifyServerCluster.u16IdentifyTime%2);
+}
+void vAPP_ZCL_DeviceSpecific_SetIdentifyTime(uint16 u16Time)
+{
+    sDevice.sIdentifyServerCluster.u16IdentifyTime=u16Time;
+}
+void vAPP_ZCL_DeviceSpecific_IdentifyOff(void)
+{
+    vAPP_ZCL_DeviceSpecific_SetIdentifyTime(0);
+    APP_vSetLED(LED2, 0);
+}
+
+PUBLIC void vHandleDeviceEvent(teLR3LSEventEnum eEvent)
+{
+	tsZCL_Address sAddress;
+	tsCLD_AEAA_EventNotificationPayload sPayload;
+
+	sAddress.eAddressMode = E_ZCL_AM_BROADCAST;
+	sAddress.uAddress.eBroadcastMode = ZPS_E_APL_AF_BROADCAST_RX_ON;
+
+	sPayload.u8EventHeader = 0;
+	sPayload.u8EventIdentification = eEvent;
+
+	eCLD_AEAAEventNotificationSend(
+			sDevice.sEndPoint.u8EndPointNumber,
+			0,
+			&sAddress,
+			&u8SequenceNumber,
+			&sPayload
+			);
+}
+
+PUBLIC void vHandleDeviceAlarm(teLR3LSAlarmEnum eAlarm, bool_t bOn)
+{
+	tsZCL_Address sAddress;
+
+	sAddress.eAddressMode = E_ZCL_AM_BROADCAST;
+	sAddress.uAddress.eBroadcastMode = ZPS_E_APL_AF_BROADCAST_RX_ON;
+
+	if (bOn)
+		vSetAlarmOn(eAlarm);
+	else
+		vSetAlarmOff(eAlarm);
+
+	eCLD_AEAAAlertsNotificationSend(
+			sDevice.sEndPoint.u8EndPointNumber,
+			0,
+			&sAddress,
+			&u8SequenceNumber,
+			&sAlarmPayload
+			);
+}
+
+PUBLIC void vSendImmediateReport(void)
+{
+    tsZCL_Address sAddress;
+
+	sAddress.eAddressMode = E_ZCL_AM_BROADCAST;
+	sAddress.uAddress.eBroadcastMode = ZPS_E_APL_AF_BROADCAST_RX_ON;
+
+	eCLD_AEAAAlertsNotificationSend(
+			sDevice.sEndPoint.u8EndPointNumber,
+			0,
+			&sAddress,
+			&u8SequenceNumber,
+			&sAlarmPayload
+			);
+}
+

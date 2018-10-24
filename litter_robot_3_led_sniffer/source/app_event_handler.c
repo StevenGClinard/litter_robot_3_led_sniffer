@@ -45,18 +45,18 @@
 #include "dbg.h"
 #include "app_events.h"
 #include "app_buttons.h"
-#include "app_zlo_sensor_node.h"
 #include "app_sleep_handler.h"
 #include "app_event_handler.h"
-#include "app_reporting.h"
 #include "app_blink_led.h"
 #include "app_nwk_event_handler.h"
 #include "bdb_api.h"
 #include "bdb_fb_api.h"
 #include "app_main.h"
-#include "app_zcl_cfg.h"
 
-#include "app_litter_robot_3_led_sniffer.h"
+#include "app_common.h"
+
+#include "app_LR3LS.h"
+#include "app_LR3LS_zigbee.h"
 
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
@@ -104,7 +104,8 @@ PRIVATE void vStopPersistantPolling(void);
  ****************************************************************************/
 PUBLIC void vDioEventHandler(APP_teButtons eTransitionCode )
 {
-	static teLitterRobot3StateEnum device_state = E_LR3LS_STATE_UNKNOWN;
+	static teLR3LSAlarmEnum eLastAlarm = E_LR3LS_ALARM_COUNT;
+	static bool_t bAlarmOn = false;
     static uint8_t poll_flag = 0;
 
     ZPS_eAplZdoPoll();
@@ -114,8 +115,14 @@ PUBLIC void vDioEventHandler(APP_teButtons eTransitionCode )
     {
     /* Fall through for the button presses as there will be a delayed action*/
     case APP_E_BUTTONS_BUTTON_SW5:
-    	device_state = (device_state + 1) % E_LR3LS_STATE_COUNT;
-        vHandleDeviceStateChange(device_state);
+    	bAlarmOn = !bAlarmOn;
+    	if (bAlarmOn)
+    	{
+    		if (++eLastAlarm >= E_LR3LS_ALARM_COUNT)
+    			eLastAlarm = E_LR3LS_ALARM_FULL;
+    	}
+
+    	vHandleDeviceAlarm(eLastAlarm, bAlarmOn);
         break;
 
     case APP_E_BUTTONS_BUTTON_SW4:  /* Start/Stop Persistant Polling */
@@ -178,12 +185,11 @@ PUBLIC void vAppHandleAppEvent(APP_tsEvent sButton)
         vDioEventHandler(eTransitionCode);
         break;
 
-    case APP_E_EVENT_SEND_REPORT:
-        vSendImmediateReport();
-        break;
+//    case APP_E_EVENT_SEND_REPORT:
+//        break;
 
-    case APP_E_EVENT_PERIODIC_REPORT:
-        break;
+//    case APP_E_EVENT_PERIODIC_REPORT:
+//        break;
 
     default:
         break;
@@ -211,7 +217,7 @@ PRIVATE void vEventStartFindAndBind(void)
 {
     DBG_vPrintf(TRACE_EVENT_HANDLER,"\nAPP Process Buttons: eEZ_FindAndBind");
     sBDB.sAttrib.u16bdbCommissioningGroupID = 0xFFFF;
-    BDB_eFbTriggerAsInitiator(E_LR3LS_MULTISTATE_INPUT_ENDPOINT);
+    BDB_eFbTriggerAsInitiator(E_LR3LS_APPLIANCE_ENDPOINT);
     vStartPollTimer(POLL_TIME);
     vStartBlinkTimer(APP_FIND_AND_BIND_BLINK_TIME);
 }
@@ -235,7 +241,7 @@ PUBLIC void vEventStopFindAndBind(void)
     BDB_vFbExitAsInitiator();
     vStopBlinkTimer();
     vStopPollTimerTask();
-    vHandleNewJoinEvent();
+    vAPP_LR3LS_Z_HandleNewJoinEvent();
 }
 
 /****************************************************************************

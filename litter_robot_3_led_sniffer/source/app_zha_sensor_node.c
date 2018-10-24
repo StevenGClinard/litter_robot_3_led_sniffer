@@ -34,7 +34,7 @@
 */
 
 /*!=================================================================================================
-\file       app_zlo_sensor_node.c
+\file       app_zha_sensor_node.c
 \brief      ZLO Demo : Stack <-> Light Sensor App Interaction (Implementation)
 ==================================================================================================*/
 
@@ -42,6 +42,7 @@
 /***        Include files                                                 ***/
 /****************************************************************************/
 
+#include <app_zha_sensor_node.h>
 #include <jendefs.h>
 
 
@@ -60,16 +61,12 @@
 #include "app_blink_led.h"
 #include "PDM_IDs.h"
 
-#include "app_zlo_sensor_node.h"
 #include "app_zcl_sensor_task.h"
-//#include "app_zbp_utilities.h"
+#include "app_zha_sensor_node.h"
 #include "app_events.h"
 #include "app_buttons.h"
 #include "zcl_customcommand.h"
-//REMOVE #include "app_occupancy_sensor_state_machine.h"
-//REMOVE #include "App_OccupancySensor.h"
 #include "zcl_common.h"
-#include "app_reporting.h"
 #ifdef CLD_OTA
     #include "OTA.h"
     #include "app_ota_client.h"
@@ -86,7 +83,7 @@
 #include "app_zps_cfg.h"
 
 #include "Identify.h"
-#include <app_litter_robot_3_led_sniffer.h>
+#include "app_LR3LS_zigbee.h"
 
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
@@ -151,7 +148,6 @@ PUBLIC teNODE_STATES eGetNodeState(void)
  ****************************************************************************/
 PUBLIC void APP_vInitialiseNode(void)
 {
-    PDM_teStatus eStatusReportReload;
     DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP Sensor Node: APP_vInitialiseNode");
 
     APP_vInitLeds();
@@ -162,7 +158,6 @@ PUBLIC void APP_vInitialiseNode(void)
 #endif
 
     /* Restore any report data that is previously saved to flash */
-    eStatusReportReload = eRestoreReports();
     uint16 u16ByteRead;
 
     PDM_eReadDataFromRecord(PDM_ID_APP_SENSOR,
@@ -188,15 +183,6 @@ PUBLIC void APP_vInitialiseNode(void)
 
     /* Set end device age out time to 11 days 9 hours & 4 mins */
     ZPS_bAplAfSetEndDeviceTimeout(ZED_TIMEOUT_16384_MIN);
-
-    /*Load the reports from the PDM or the default ones depending on the PDM load record status*/
-    if(eStatusReportReload !=PDM_E_STATUS_OK )
-    {
-        /*Load Defaults if the data was not correct*/
-        vLoadDefaultConfigForReportable();
-    }
-    /*Make the reportable attributes */
-    vMakeSupportedAttributesReportable();
 
     /* If the device state has been restored from flash, re-start the stack
      * and set the application running again.
@@ -450,7 +436,7 @@ PUBLIC void APP_taskSensor(void)
                 else
                 {
                     //Retrigger the network steering as sensor is not part of a network
-                    vAppHandleStartup();
+                    vApp_LR3LS_Z_HandleStartup();
                 }
             }
             else
@@ -474,7 +460,7 @@ PUBLIC void APP_taskSensor(void)
  ****************************************************************************/
 PRIVATE void vAppHandleAfEvent( BDB_tsZpsAfEvent *psZpsAfEvent)
 {
-    if (psZpsAfEvent->u8EndPoint == E_LR3LS_MULTISTATE_INPUT_ENDPOINT)
+    if (psZpsAfEvent->u8EndPoint == E_LR3LS_APPLIANCE_ENDPOINT)
     {
         DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP ZLO Sensor Task: ZCL Event");
         APP_ZCL_vEventHandler( &psZpsAfEvent->sStackEvent);
@@ -618,11 +604,11 @@ PRIVATE void vAppHandleZdoEvents( BDB_tsZpsAfEvent *psZpsAfEvent)
     {
 
     case E_STARTUP:
-        vAppHandleStartup();
+        vApp_LR3LS_Z_HandleStartup();
         break;
 
     case E_RUNNING:
-        vAppHandleRunning( &(psZpsAfEvent->sStackEvent) );
+    	vApp_LR3LS_Z_HandleRunning( &(psZpsAfEvent->sStackEvent) );
         break;
 
     case E_JOINING_NETWORK:

@@ -47,46 +47,6 @@
 
 #include "ZTimer.h"
 
-/* Device specific includes
- * As a new light or controller is added it needs an entry here
- *
- */
-#ifdef DimmerSwitch
-    #include "App_DimmerSwitch.h"
-#endif
-
-#ifdef ColorDimmerSwitch
-    #include "App_ColorDimmerSwitch.h"
-#endif
-
-#ifdef DimmableLight
-    #include "App_DimmableLight.h"
-#endif
-
-#ifdef OTAColorDimmableLightWithOccupancy
-    #include "App_OTAColorDimmableLightWithOccupancy.h"
-#endif
-
-#ifdef ColorTempTunableWhiteLight
-    #include "App_ColorTempTunableWhiteLight.h"
-#endif
-
-#ifdef ColorDimmableLight
-    #include "App_ColorDimmableLight.h"
-#endif
-
-#ifdef OccupancySensor
-    #include "App_OccupancySensor.h"
-#endif
-
-#ifdef LightSensor
-    #include "App_LightSensor.h"
-#endif
-
-#ifdef RemoteControl
-    #include "App_RemoteControl.h"
-#endif
-
 #include "zcl_options.h"
 /****************************************************************************/
 /***        Macro Definitions                                             ***/

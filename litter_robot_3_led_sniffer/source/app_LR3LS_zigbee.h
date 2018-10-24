@@ -31,18 +31,28 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /*!=================================================================================================
-\file       app_litter_robot_3_led_sniffer.h
-\brief      Declarations specific to LR3LS device functions
+\file       app_LR3LS_zigbee.h
+\brief      Zigbee functionality of LR3LS
 ==================================================================================================*/
 
 
-#ifndef APP_LITTER_ROBOT_3_LED_SNIFFER_H_
-#define APP_LITTER_ROBOT_3_LED_SNIFFER_H_
+#ifndef APP_LR3LS_ZIGBEE_H_
+#define APP_LR3LS_ZIGBEE_H_
+
+#include "jendefs.h"
+#include "app_LR3LS.h"
 
 #include "zcl_options.h"
-#include "ZTimer.h"
-#include "app_reporting.h"
-#include "MultistateInputBasic.h"
+#include "zcl.h"
+#include "app_LR3LS_zigbee.h"
+
+//#include "ZTimer.h"
+
+//typedef struct ZPS_tsAfEvent ZPS_tsAfEvent;
+//typedef struct tfpZCL_ZCLCallBackFunction tfpZCL_ZCLCallBackFunction;
+
+//#include "white_goods.h"
+//#include "ApplianceEventsAndAlerts.h"
 
 #define APP_JOINING_BLINK_TIME	      (ZTIMER_TIME_MSEC(1000))
 #define APP_FIND_AND_BIND_BLINK_TIME  (ZTIMER_TIME_MSEC(500))
@@ -54,49 +64,26 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef enum
 {
 	E_LR3LS_ZDO_ENDPOINT				= 0,
-	E_LR3LS_MULTISTATE_INPUT_ENDPOINT,
+	E_LR3LS_APPLIANCE_ENDPOINT,
 
 	E_LR3LS_ENDPOINT_COUNT
 } teLitterRobot3Endpoints;
 
+PUBLIC void vApp_LR3LS_Z_HandleStartup(void);
+PUBLIC void vApp_LR3LS_Z_HandleRunning(ZPS_tsAfEvent* psStackEvent);
 
-#define   CLD_MULTISTATE_INPUT_BASIC_ATTR_DESCRIPTION
+PUBLIC void vAPP_LR3LS_Z_HandleNewJoinEvent(void);
+PUBLIC void vAPP_LR3LS_Z_ClearMemory(void);
+PUBLIC void vAPP_LR3LS_Z_DeviceSpecific_Init(void);
+PUBLIC teZCL_Status eApp_LR3LS_Z_RegisterEndpoint(tfpZCL_ZCLCallBackFunction fptr);
 
-typedef enum
-{
-	E_LR3LS_ATTRIBUTE_DESCRIPTION		= 0,
-	E_LR3LS_ATTRIBUTE_NUMBER_OF_STATES,
-	E_LR3LS_ATTRIBUTE_OUT_OF_SERVICE,
-	E_LR3LS_ATTRIBUTE_PRESENT_VALUE,
-	E_LR3LS_ATTRIBUTE_STATUS_FLAGS,
-
-	E_LR3LS_ATTRIBUTE_COUNT
-} teLitterRobot3Attributes;
-
-extern tsReports asDefaultReports[E_LR3LS_ATTRIBUTE_COUNT];
-
-typedef enum
-{
-	E_LR3LS_STATE_UNKNOWN  = 0,
-	E_LR3LS_STATE_OFF		= 1,
-	E_LR3LS_STATE_OK		= 2,
-	E_LR3LS_STATE_FULL		= 3,
-	E_LR3LS_STATE_WAITING	= 4,
-	E_LR3LS_STATE_CYCLING	= 5,
-	E_LR3LS_STATE_STUCK	= 6,
-
-	E_LR3LS_STATE_COUNT
-} teLitterRobot3StateEnum;
-
-PUBLIC void vHandleDeviceStateChange(teLitterRobot3StateEnum state);
-
-PUBLIC void vHandleNewJoinEvent(void);
-
-PUBLIC void vAPP_ZCL_DeviceSpecific_Init(void);
-PUBLIC teZCL_Status eApp_ZLO_RegisterEndpoint(tfpZCL_ZCLCallBackFunction fptr);
 PUBLIC void vAPP_ZCL_DeviceSpecific_UpdateIdentify(void);
 PUBLIC void vAPP_ZCL_DeviceSpecific_SetIdentifyTime(uint16 u16Time);
 PUBLIC void vAPP_ZCL_DeviceSpecific_IdentifyOff(void);
+
+PUBLIC void vHandleDeviceEvent(teLR3LSEventEnum eEvent);
+PUBLIC void vHandleDeviceAlarm(teLR3LSAlarmEnum eAlarm, bool_t bOn);
+PUBLIC void vSendImmediateReport(void);
 
 typedef enum
 {
@@ -105,9 +92,4 @@ typedef enum
 	E_LR3LS_TIMER_COUNT
 } teLitterRobot3TimerEnum;
 
-extern tsCLD_MultistateInputBasic sLR3LSState;
-
-PUBLIC void vAppHandleStartup(void);
-PUBLIC void vAppHandleRunning(ZPS_tsAfEvent* psStackEvent);
-
-#endif /* APP_LITTER_ROBOT_3_LED_SNIFFER_H_ */
+#endif /* APP_LR3LS_ZIGBEE_H_ */

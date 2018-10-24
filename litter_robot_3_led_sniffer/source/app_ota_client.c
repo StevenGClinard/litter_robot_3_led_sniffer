@@ -1,4 +1,5 @@
 /*
+#include <app_zha_node.h>
 * The Clear BSD License
 * Copyright 2016-2017 NXP
 * All rights reserved.
@@ -55,7 +56,6 @@
 
 
 #include "app_ota_client.h"
-#include "app_zlo_sensor_node.h"
 #include "app_common.h"
 #ifdef CPU_MKW41Z512VHT4
   #include "RNG_Interface.h"

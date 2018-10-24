@@ -1,4 +1,5 @@
 /*
+#include <app_zha_node.h>
 * The Clear BSD License
 * Copyright 2016-2017 NXP
 * All rights reserved.
@@ -56,10 +57,9 @@
 #include "app_pdum_cfg.h"
 #include "app_zcl_cfg.h"
 #include "zps_apl_af.h"
-#include "app_zlo_sensor_node.h"
 #include "app_main.h"
 #include "app_blink_led.h"
-//#include "app_occupancy_buttons.h"
+#include "app_zha_sensor_node.h"
 #include <string.h>
 #include "bdb_api.h"
 

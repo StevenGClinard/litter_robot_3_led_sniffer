@@ -1,4 +1,6 @@
 /*
+#include <app_zha_node.h>
+#include <app_LR3LS_zigbee.h>
 * The Clear BSD License
 * Copyright 2016-2017 NXP
 * All rights reserved.
@@ -41,7 +43,6 @@
 /****************************************************************************/
 /***        Include files                                                 ***/
 /****************************************************************************/
-#include <app_litter_robot_3_led_sniffer.h>
 #include <jendefs.h>
 #include <string.h>
 #include "dbg.h"
@@ -54,7 +55,6 @@
 #include "app_sleep_handler.h"
 #include "app_zcl_tick_handler.h"
 #include "app_zcl_sensor_task.h"
-#include "app_zlo_sensor_node.h"
 #include "app_blink_led.h"
 #include "LED.h"
 

@@ -1,4 +1,6 @@
 /*
+#include <app_zha_node.h>
+#include <app_LR3LS_zigbee.h>
 * The Clear BSD License
 * Copyright 2016-2017 NXP
 * All rights reserved.
@@ -41,24 +43,23 @@
 /****************************************************************************/
 /***        Include files                                                 ***/
 /****************************************************************************/
-#include <app_litter_robot_3_led_sniffer.h>
 #include "jendefs.h"
 #include "dbg.h"
 #include "app_events.h"
 #include "ZTimer.h"
 #include "app_main.h"
 #include "app_sleep_handler.h"
+
 #include "app_common.h"
 #include "app_nwk_event_handler.h"
-
+#include "app_zha_sensor_node.h"
+#include "app_LR3LS_zigbee.h"
 
 #include "app_blink_led.h"
 #include "pwrm.h"
 #include "app_pdum_cfg.h"
 #include "PDM.h"
-#include "app_pdum_cfg.h"
 #include "PDM_IDs.h"
-#include "app_zlo_sensor_node.h"
 #include "app_event_handler.h"
 
 
@@ -231,7 +232,7 @@ PUBLIC void vHandleNetworkJoinEndDevice(void)
         vStopBlinkTimer();
     }
 
-    vHandleNewJoinEvent();
+    vAPP_LR3LS_Z_HandleNewJoinEvent();
 }
 
 /****************************************************************************

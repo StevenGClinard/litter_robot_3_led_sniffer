@@ -43,7 +43,6 @@
 /***        Include files                                                 ***/
 /****************************************************************************/
 
-#include <app_litter_robot_3_led_sniffer.h>
 #include <stdint.h>
 #include "jendefs.h"
 
@@ -69,11 +68,12 @@
 #include "app_events.h"
 #include "app_zcl_sensor_task.h"
 #include "PDM.h"
-#include "app_zlo_sensor_node.h"
 #include "app_nwk_event_handler.h"
 #include "app_blink_led.h"
 #include "app_sleep_handler.h"
 #include "app_event_handler.h"
+#include "app_zha_sensor_node.h"
+#include "app_LR3LS_zigbee.h"
 
 
 /****************************************************************************/

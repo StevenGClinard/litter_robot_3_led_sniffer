@@ -1,4 +1,5 @@
 /*
+#include <app_zha_node.h>
 * The Clear BSD License
 * Copyright 2016-2017 NXP
 * All rights reserved.
@@ -58,7 +59,6 @@
 #include "zcl_options.h"
 #include "zcl.h"
 #include "app_common.h"
-#include "app_zlo_sensor_node.h"
 #include "app_events.h"
 #include "LightingBoard.h"
 #include "app_zcl_tick_handler.h"
@@ -66,13 +66,12 @@
 #ifdef CLD_OTA
     #include "app_ota_client.h"
 #endif
-#include "app_reporting.h"
 #include "app_blink_led.h"
 
 #include "Basic.h"
 #include "Identify.h"
 #include "MultistateInputBasic.h"
-#include <app_litter_robot_3_led_sniffer.h>
+#include <app_LR3LS_zigbee.h>
 
 /****************************************************************************/
 /***        Macro Definitions                                             ***/
@@ -133,11 +132,11 @@ PUBLIC void APP_ZCL_vInitialise(void)
         DBG_vPrintf(TRACE_ZCL, "\nAPP_ZCL: Error eZCL_Initialise returned %d", eZCL_Status);
     }
 
-    /* Register ZLO EndPoint */
-    eZCL_Status = eApp_ZLO_RegisterEndpoint(&APP_ZCL_cbEndpointCallback);
+    /* Register ZHA EndPoint */
+    eZCL_Status = eApp_LR3LS_Z_RegisterEndpoint(&APP_ZCL_cbEndpointCallback);
     if (eZCL_Status != E_ZCL_SUCCESS)
     {
-            DBG_vPrintf(TRACE_SENSOR_TASK, "\nAPP_ZCL: Error: eApp_ZLO_RegisterEndpoint:%d", eZCL_Status);
+            DBG_vPrintf(TRACE_SENSOR_TASK, "\nAPP_ZCL: Error: eApp_LR3LS_Z_RegisterEndpoint:%d", eZCL_Status);
     }
 
     DBG_vPrintf(TRACE_SENSOR_TASK, "\nAPP_ZCL: Chan Mask %08x", ZPS_psAplAibGetAib()->apsChannelMask);
@@ -145,7 +144,7 @@ PUBLIC void APP_ZCL_vInitialise(void)
 
     ZTIMER_eStart(u8TimerTick, ZCL_TICK_TIME);
 
-    vAPP_ZCL_DeviceSpecific_Init();
+    vAPP_LR3LS_Z_DeviceSpecific_Init();
 #ifdef CLD_OTA
     vAppInitOTA();
 #endif
@@ -298,24 +297,6 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
     {
 
     case E_ZCL_CBET_REPORT_INDIVIDUAL_ATTRIBUTES_CONFIGURE:
-        {
-            tsZCL_AttributeReportingConfigurationRecord    *psAttributeReportingRecord= &psEvent->uMessage.sAttributeReportingConfigurationRecord;
-            DBG_vPrintf(TRACE_ZCL,"\nAPP_ZCL: Individual Configure attribute for Cluster = %d",psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum);
-            DBG_vPrintf(TRACE_ZCL,"\nAPP_ZCL: eAttributeDataType = %d",psAttributeReportingRecord->eAttributeDataType);
-            DBG_vPrintf(TRACE_ZCL,"\nAPP_ZCL: u16AttributeEnum = %d",psAttributeReportingRecord->u16AttributeEnum );
-            DBG_vPrintf(TRACE_ZCL,"\nAPP_ZCL: u16MaximumReportingInterval = %d",psAttributeReportingRecord->u16MaximumReportingInterval );
-            DBG_vPrintf(TRACE_ZCL,"\nAPP_ZCL: u16MinimumReportingInterval = %d",psAttributeReportingRecord->u16MinimumReportingInterval );
-            DBG_vPrintf(TRACE_ZCL,"\nAPP_ZCL: u16TimeoutPeriodField = %d",psAttributeReportingRecord->u16TimeoutPeriodField );
-            DBG_vPrintf(TRACE_ZCL,"\nAPP_ZCL: u8DirectionIsReceived = %d",psAttributeReportingRecord->u8DirectionIsReceived );
-            DBG_vPrintf(TRACE_ZCL,"\nAPP_ZCL: uAttributeReportableChange = %d",psAttributeReportingRecord->uAttributeReportableChange );
-            if (E_ZCL_SUCCESS == psEvent->eZCL_Status)
-            {
-                if(GENERAL_CLUSTER_ID_MULTISTATE_INPUT_BASIC == psEvent->psClusterInstance->psClusterDefinition->u16ClusterEnum)
-                {
-                    vSaveReportableRecord(GENERAL_CLUSTER_ID_MULTISTATE_INPUT_BASIC,psAttributeReportingRecord);
-                }
-            }
-        }
         break;
 
     case E_ZCL_CBET_UNHANDLED_EVENT:
@@ -345,13 +326,12 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
             if (psCallBackMessage->u8CommandId == E_CLD_BASIC_CMD_RESET_TO_FACTORY_DEFAULTS )
             {
                 DBG_vPrintf(TRACE_ZCL, "Basic Factory Reset Received\n");
-                /* resetting the sensor structure back to zero*/
-                FLib_MemSet(&sLR3LSState,0,sizeof(tsCLD_MultistateInputBasic));
-                vAPP_ZCL_DeviceSpecific_Init();
+                vAPP_LR3LS_Z_ClearMemory();
+                vAPP_LR3LS_Z_DeviceSpecific_Init();
 				#ifdef CLD_OTA
                 	vAppInitOTA();
                 #endif
-                eApp_ZLO_RegisterEndpoint(&APP_ZCL_cbEndpointCallback);
+                eApp_LR3LS_Z_RegisterEndpoint(&APP_ZCL_cbEndpointCallback);
             }
         }
         break;

@@ -102,14 +102,14 @@ static uint8 u8SequenceNumber;
 
 void vApp_LR3LS_Z_HandleStartup(void)
 {
-    DBG_vPrintf(TRACE_LR3LS_EVENTS, "\nAPP State Event: StartUp");
+    DBG_vPrintf(TRACE_LR3LS_EVENTS, "APP State Event: StartUp\n");
     BDB_eNsStartNwkSteering();
     sDeviceDesc.eNodeState = E_JOINING_NETWORK;
 }
 
 void vApp_LR3LS_Z_HandleRunning(ZPS_tsAfEvent* psStackEvent)
 {
-    DBG_vPrintf(TRACE_LR3LS_EVENTS, "\nAPP State Event: Running: Event %d", psStackEvent->eType);
+    DBG_vPrintf(TRACE_LR3LS_EVENTS, "APP State Event: Running: Event %d\n", psStackEvent->eType);
 
     switch(psStackEvent->eType)
     {
@@ -146,14 +146,14 @@ void vApp_LR3LS_Z_HandleRunning(ZPS_tsAfEvent* psStackEvent)
     }
 }
 
-void vAPP_LR3LS_Z_HandleNewJoinEvent(void)
+void vAPP_LR3LS_Z_HandleNewJoinEvent(bool bJoined)
 {
-    DBG_vPrintf(TRACE_LR3LS_EVENTS,"\nAPP Device Event: New join");
+    DBG_vPrintf(TRACE_LR3LS_EVENTS,"APP Device Event: joined? %s\n", (bJoined) ? "yes" : "no");
 }
 
 void vAPP_LR3LS_Z_ClearMemory(void)
 {
-	DBG_vPrintf(TRACE_LR3LS_EVENTS,"\nAPP Device Event: Clear memory");
+	DBG_vPrintf(TRACE_LR3LS_EVENTS,"APP Device Event: Clear memory\n");
 
 	/* resetting the sensor structure back to zero*/
 	FLib_MemSet(&sDevice, 0, sizeof(sDevice));
@@ -161,7 +161,7 @@ void vAPP_LR3LS_Z_ClearMemory(void)
 
 void vAPP_LR3LS_Z_DeviceSpecific_Init(void)
 {
-	DBG_vPrintf(TRACE_LR3LS_EVENTS,"\nAPP Device Event: Init");
+	DBG_vPrintf(TRACE_LR3LS_EVENTS,"APP Device Event: Init\n");
 
     /* Initialise the strings in Basic */
     FLib_MemCpy(sDevice.sBasicServerCluster.au8ManufacturerName, ZCL_MANUFACTURER_NAME, CLD_BAS_MANUF_NAME_SIZE);
@@ -176,7 +176,7 @@ void vAPP_LR3LS_Z_DeviceSpecific_Init(void)
 
 teZCL_Status eApp_LR3LS_Z_RegisterEndpoint(tfpZCL_ZCLCallBackFunction fptr)
 {
-	DBG_vPrintf(TRACE_LR3LS_EVENTS,"\nAPP Device Event: Register Endpoint");
+	DBG_vPrintf(TRACE_LR3LS_EVENTS,"APP Device Event: Register Endpoint\n");
 
 	return eHA_RegisterWhiteGoodsEndPoint(E_LR3LS_APPLIANCE_ENDPOINT, fptr, &sDevice);
 }

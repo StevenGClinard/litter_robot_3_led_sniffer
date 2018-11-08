@@ -72,7 +72,7 @@ typedef enum
 PUBLIC void vApp_LR3LS_Z_HandleStartup(void);
 PUBLIC void vApp_LR3LS_Z_HandleRunning(ZPS_tsAfEvent* psStackEvent);
 
-PUBLIC void vAPP_LR3LS_Z_HandleNewJoinEvent(void);
+PUBLIC void vAPP_LR3LS_Z_HandleNewJoinEvent(bool bJoined);
 PUBLIC void vAPP_LR3LS_Z_ClearMemory(void);
 PUBLIC void vAPP_LR3LS_Z_DeviceSpecific_Init(void);
 PUBLIC teZCL_Status eApp_LR3LS_Z_RegisterEndpoint(tfpZCL_ZCLCallBackFunction fptr);

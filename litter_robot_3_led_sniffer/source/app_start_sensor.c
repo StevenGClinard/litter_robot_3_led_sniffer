@@ -36,7 +36,7 @@
 
 /*!=================================================================================================
 \file       app_start_sensor.c
-\brief      ZLO Sensor Application Initialisation and Startup
+\brief      ZHA Sensor Application Initialisation and Startup
 ==================================================================================================*/
 
 /****************************************************************************/
@@ -122,13 +122,13 @@ PUBLIC void vAppMain(void)
 {
     /* idle task commences here */
     DBG_vPrintf(TRUE, "***********************************************\n");
-    DBG_vPrintf(TRUE, "*           SENSOR RESET                          *\n");
+    DBG_vPrintf(TRUE, "*          LS3LR SENSOR RESET                 *\n");
     DBG_vPrintf(TRUE, "***********************************************\n");
     
-    DBG_vPrintf(TRACE_START, "\nAPP Entering APP_vInitResources()");
+    DBG_vPrintf(TRACE_START, "APP Entering APP_vInitResources()\n");
     APP_vInitResources();
 
-    DBG_vPrintf(TRACE_START, "\nAPP Entering APP_vInitialise()");
+    DBG_vPrintf(TRACE_START, "APP Entering APP_vInitialise()\n");
     vInitialiseApp();
 
     if (FALSE == APP_bNodeIsInRunningState()) BDB_eNsStartNwkSteering();
@@ -190,7 +190,7 @@ PRIVATE void vInitialiseApp(void)
     /* Initialise application */
     APP_vInitialiseNode();
 
-    DBG_vPrintf(TRACE_START,"\nAPP Start: Initialised");
+    DBG_vPrintf(TRACE_START,"APP Start: Initialised\n");
 
 }
 

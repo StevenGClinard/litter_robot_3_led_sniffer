@@ -232,7 +232,7 @@ PUBLIC void vHandleNetworkJoinEndDevice(void)
         vStopBlinkTimer();
     }
 
-    vAPP_LR3LS_Z_HandleNewJoinEvent();
+    vAPP_LR3LS_Z_HandleNewJoinEvent(TRUE);
 }
 
 /****************************************************************************

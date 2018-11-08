@@ -35,7 +35,7 @@
 
 /*!=================================================================================================
 \file       app_zha_sensor_node.c
-\brief      ZLO Demo : Stack <-> Light Sensor App Interaction (Implementation)
+\brief
 ==================================================================================================*/
 
 /****************************************************************************/
@@ -148,7 +148,7 @@ PUBLIC teNODE_STATES eGetNodeState(void)
  ****************************************************************************/
 PUBLIC void APP_vInitialiseNode(void)
 {
-    DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP Sensor Node: APP_vInitialiseNode");
+    DBG_vPrintf(TRACE_SENSOR_NODE, "APP Sensor Node: APP_vInitialiseNode\n");
 
     APP_vInitLeds();
 	
@@ -177,7 +177,7 @@ PUBLIC void APP_vInitialiseNode(void)
 #endif
     ZPS_eAplAfInit();
 
-    DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP Sensor Node: ZPS_eAplAfInit");
+    DBG_vPrintf(TRACE_SENSOR_NODE, "APP Sensor Node: ZPS_eAplAfInit\n");
 
     APP_ZCL_vInitialise();
 
@@ -201,7 +201,7 @@ PUBLIC void APP_vInitialiseNode(void)
     }
     else
     {
-        DBG_vPrintf(TRACE_SENSOR_NODE, "\nFactory New Start");
+        DBG_vPrintf(TRACE_SENSOR_NODE, "Factory New Start\n");
         app_vStartNodeFactoryNew();
         sBDB.sAttrib.bbdbNodeIsOnANetwork = FALSE;
     }
@@ -291,7 +291,7 @@ PUBLIC void APP_vBdbCallback(BDB_tsBdbEvent *psBdbEvent)
 
     case BDB_EVENT_NWK_STEERING_SUCCESS:
         // go to running state
-        DBG_vPrintf(TRACE_SENSOR_NODE,"GoRunningState\n!");
+        DBG_vPrintf(TRACE_SENSOR_NODE,"GoRunningState!\n");
         bBDBJoinFailed = FALSE;
         vHandleNetworkJoinAndRejoin();
         break;
@@ -409,8 +409,13 @@ PUBLIC void APP_taskSensor(void)
     /*Collect the application events*/
     if (ZQ_bQueueReceive(&APP_msgAppEvents, &sAppEvent) == TRUE)
     {
-        DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP ZLO Sensor Task: App Event %d", sAppEvent.eType);
+        DBG_vPrintf(TRACE_SENSOR_NODE, "APP Sensor Task: App Event %d\n", sAppEvent.eType);
         {
+        	if (sAppEvent.eType == APP_E_EVENT_BUTTON_DOWN)
+        	{
+        		DBG_vPrintf(TRACE_SENSOR_NODE, "APP Sensor Task: Button %d down\n", sAppEvent.uEvent.sButton.u8Button);
+        	}
+
             // Reset if required
             if ((sAppEvent.eType == APP_E_EVENT_BUTTON_DOWN) && (sAppEvent.uEvent.sButton.u8Button == APP_E_BUTTONS_BUTTON_1))
             {
@@ -423,6 +428,7 @@ PUBLIC void APP_taskSensor(void)
                 }
             }
 
+            DBG_vPrintf(TRACE_SENSOR_NODE, "APP Sensor Task: joinfailed=%d\n", bBDBJoinFailed);
             if(bBDBJoinFailed)
             {
                 vStartBlinkTimer(APP_JOINING_BLINK_TIME);
@@ -462,12 +468,12 @@ PRIVATE void vAppHandleAfEvent( BDB_tsZpsAfEvent *psZpsAfEvent)
 {
     if (psZpsAfEvent->u8EndPoint == E_LR3LS_APPLIANCE_ENDPOINT)
     {
-        DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP ZLO Sensor Task: ZCL Event");
+        DBG_vPrintf(TRACE_SENSOR_NODE, "APP ZHA Sensor Task: ZCL Event\n");
         APP_ZCL_vEventHandler( &psZpsAfEvent->sStackEvent);
     }
     else if (psZpsAfEvent->u8EndPoint == E_LR3LS_ZDO_ENDPOINT)
     {
-        DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP ZLO Sensor Task: Main APP Handle");
+        DBG_vPrintf(TRACE_SENSOR_NODE, "APP ZHA Sensor Task: Main APP Handle\n");
         vAppHandleZdoEvents( psZpsAfEvent);
     }
 
@@ -496,7 +502,7 @@ PRIVATE void vAppHandleAfEvent( BDB_tsZpsAfEvent *psZpsAfEvent)
  ****************************************************************************/
 PRIVATE void vHandleZdoLeaveRequest(uint8 u8Action, uint64 u64TargetAddr, uint8 u8Flags)
 {
-    DBG_vPrintf(TRACE_SENSOR_NODE, "\n%s - Addr: 0x%016llx, Action: 0x%02x Flags: 0x%02x\n", __FUNCTION__, u64TargetAddr, u8Action, u8Flags);
+    DBG_vPrintf(TRACE_SENSOR_NODE, "%s - Addr: 0x%016llx, Action: 0x%02x Flags: 0x%02x\n", __FUNCTION__, u64TargetAddr, u8Action, u8Flags);
 
     /* Check this request is for us */
     if ((u64TargetAddr == ZPS_u64AplZdoGetIeeeAddr()) || (u64TargetAddr == 0ULL))
@@ -559,7 +565,7 @@ PRIVATE void vDeletePDMOnButtonPress(uint8 u8ButtonDIO)
         if (ZPS_E_SUCCESS !=  ZPS_eAplZdoLeaveNetwork(0, FALSE,FALSE))
         {
             /* Leave failed, probably lost parent, so just reset everything */
-            DBG_vPrintf(TRACE_SENSOR_NODE,"\nAPP Sensor Node: Deleting the PDM");
+            DBG_vPrintf(TRACE_SENSOR_NODE,"APP Sensor Node: Deleting the PDM\n");
             APP_vFactoryResetRecords();
             vAHI_SwReset();
         }
@@ -638,7 +644,7 @@ PRIVATE void app_vRestartNode (void)
     /* The node is in running state indicates that
      * the EZ Mode state is as E_EZ_DEVICE_IN_NETWORK*/
 
-    DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP Non Factory New Start");
+    DBG_vPrintf(TRACE_SENSOR_NODE, "APP Non Factory New Start\n");
 
     ZPS_vSaveAllZpsRecords();
 }
@@ -663,7 +669,7 @@ PRIVATE void app_vStartNodeFactoryNew(void)
 
     sDeviceDesc.eNodeState = E_JOINING_NETWORK;
     /* Stay awake for joining */
-    DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP Sensor Node: Factory New Start");
+    DBG_vPrintf(TRACE_SENSOR_NODE, "APP Sensor Node: Factory New Start\n");
 }
 
 /****************************************************************************
@@ -707,7 +713,7 @@ PUBLIC void APP_vFactoryResetRecords(void)
 
 PUBLIC bool_t APP_bNodeIsInRunningState(void)
 {
-    DBG_vPrintf(TRACE_SENSOR_NODE, "\nAPP Sensor Node: NodeState=%d", sDeviceDesc.eNodeState);
+    DBG_vPrintf(TRACE_SENSOR_NODE, "APP Sensor Node: NodeState=%d\n", sDeviceDesc.eNodeState);
     return (sDeviceDesc.eNodeState == E_RUNNING) ? TRUE:FALSE;
 }
 /****************************************************************************

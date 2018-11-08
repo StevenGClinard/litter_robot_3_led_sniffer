@@ -60,7 +60,6 @@
 #include "zcl.h"
 #include "app_common.h"
 #include "app_events.h"
-#include "LightingBoard.h"
 #include "app_zcl_tick_handler.h"
 #include "app_zcl_sensor_task.h"
 #ifdef CLD_OTA
@@ -356,7 +355,7 @@ PRIVATE void APP_ZCL_cbEndpointCallback(tsZCL_CallBackEvent *psEvent)
                 else if((psCallBackMessage->u8CommandId == E_CLD_IDENTIFY_CMD_TRIGGER_EFFECT) &&
                         psEvent->psClusterInstance->bIsServer)
                 {
-                    DBG_vPrintf(TRACE_ZCL, "Trigger Effect ID %d Vr %d\r\n",
+                    DBG_vPrintf(TRACE_ZCL, "Trigger Effect ID %d Vr %d\n",
                             psCallBackMessage->uMessage.psTriggerEffectRequestPayload->eEffectId,
                             psCallBackMessage->uMessage.psTriggerEffectRequestPayload->u8EffectVarient);
                 }

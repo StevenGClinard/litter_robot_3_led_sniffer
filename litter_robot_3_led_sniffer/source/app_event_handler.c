@@ -241,7 +241,7 @@ PUBLIC void vEventStopFindAndBind(void)
     BDB_vFbExitAsInitiator();
     vStopBlinkTimer();
     vStopPollTimerTask();
-    vAPP_LR3LS_Z_HandleNewJoinEvent();
+    vAPP_LR3LS_Z_HandleNewJoinEvent(FALSE);
 }
 
 /****************************************************************************

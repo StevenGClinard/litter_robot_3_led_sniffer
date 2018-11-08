@@ -7,3 +7,4 @@
 .cproject
 *.jlink
 build_number.defs
+*.launch

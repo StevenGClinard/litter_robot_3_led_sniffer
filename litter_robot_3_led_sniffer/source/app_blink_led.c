@@ -128,7 +128,7 @@ PUBLIC void APP_vSetLED(uint8 u8Led, bool_t bOn)
  ****************************************************************************/
 PUBLIC void vAPP_cbBlinkLED( void *pvParams)
 {
-    DBG_vPrintf(TRACE_BLINK_LED, "\nAPP Blink LED: Task Started");
+    DBG_vPrintf(TRACE_BLINK_LED, "APP Blink LED: Task Started\n");;;;
     vToggleLED();
     ZTIMER_eStart(u8TimerBlink, u32BlinkTickTime);
 }
@@ -146,7 +146,7 @@ PUBLIC void vAPP_cbBlinkLED( void *pvParams)
  ****************************************************************************/
 PUBLIC void vStartBlinkTimer(uint32 u32Ticks)
 {
-    DBG_vPrintf(TRACE_BLINK_LED, "\nAPP Blink LED: Starting Blink Timer value = %d", u32Ticks);
+    DBG_vPrintf(TRACE_BLINK_LED, "APP Blink LED: Starting Blink Timer value = %d\n", u32Ticks);
     u32BlinkTickTime = u32Ticks;
     ZTIMER_eStart(u8TimerBlink, u32Ticks);
 }
@@ -163,7 +163,7 @@ PUBLIC void vStartBlinkTimer(uint32 u32Ticks)
  ****************************************************************************/
 PUBLIC void vStopBlinkTimer(void)
 {
-    DBG_vPrintf(TRACE_BLINK_LED, "\nAPP Blink LED: Stopping Blink Timer");
+    DBG_vPrintf(TRACE_BLINK_LED, "APP Blink LED: Stopping Blink Timer\n");;;
     ZTIMER_eStop(u8TimerBlink);
     u32BlinkTickTime = 0;
     APP_vSetLED(BLINK_LED, FALSE);
@@ -185,7 +185,7 @@ PUBLIC void vStopBlinkTimer(void)
  ****************************************************************************/
 PRIVATE void vToggleLED(void)
 {
-    DBG_vPrintf(TRACE_BLINK_LED, "\nAPP Blink LED: Toggle LED to %b", !bDIO1State);
+    DBG_vPrintf(TRACE_BLINK_LED, "APP Blink LED: Toggle LED to %b\n", !bDIO1State);
     bDIO1State = !bDIO1State;
     APP_vSetLED(BLINK_LED, bDIO1State);
 }
